@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap 101 Template</title>
+    <title>Caesar Candidates</title>
 
+    <link href="css/dc.css" rel="stylesheet">
     <!-- Bootstrap -->
     <link href="dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="dist/css/bootstrap-theme.min.css" rel="stylesheet">
@@ -16,34 +17,124 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
-  <body>
-  <div class="container theme-showcase" role="main">
+    <style>
+       .row h3 {text-align:center;margin-left:45px;}
+       .row {padding-bottom:20px;}
+       div.dc-data-count {float:none;margin-top:0px;}
+       p.navbar-text {margin-right:15px;}
+       .dc-table-group {display:none;}
+    </style>
 
-    <div class="jumbotron">
-      <h1>dc example</h1>
-        <p>This is a template showcasing boostrap and dc.js. Use it as a starting point to create something more unique by building on or modifying it.</p>
+  </head>
+  <body data-spy="scroll" data-target=".navbar-default" >
+
+   <nav class="navbar navbar-default navbar-fixed-top">
+
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button data-target=".bs-example-js-navbar-scrollspy" data-toggle="collapse" type="button" class="navbar-toggle collapsed">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="#" class="navbar-brand">Caesar Candidates</a>
+        </div>
+        <div class="collapse navbar-collapse bs-example-js-navbar-scrollspy">
+          <ul class="nav navbar-nav">
+            <li><a href="#filters">graphs</a></li>
+            <li><a href="#table">List</a></li>
+            <li><a href="#about">About</a></li>
+          </ul>
+        <p class="dc-data-count nav navbar-nav navbar-text navbar-right">    
+          <span class="filter-count"></span> selected out of <span class="total-count"></span> <a href="#table">Candidates</a> | <a
+          href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+        </p>
+        </div>
+      </div>
+    </nav>
+
+  <div class="container theme-showcase" role="main">
+    <div class="page-header">
+
     </div>
 
-    <div class="row">
-      <div class="col-md-12">
-        <div id="test"></div>
+    <div class="row" id="filters">
+      <div class="col-md-4">
+        <h3>Country</h3>
+        <div id="country"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Type</h3>
+        <div id="type"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Subtype</h3>
+        <div id="subtype"></div>
       </div>
     </div>
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Parallelizable</h3>
+        <div id="parallelizable"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Online</h3>
+        <div id="online"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Nonce MR</h3>
+        <div id="nonceMR"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Decryption Misuse</h3>
+        <div id="decryptionMisuse"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Inverse Free</h3>
+        <div id="inverseFree"></div>
+      </div>
+      <div class="col-md-4">
+        <h3>Status</h3>
+        <div id="status"></div>
+      </div>
+    </div>
+    <div class="row">
     <div class="row">
       <div class="col-md-12">
       <table id="table" class="table">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Qty</th>
+            <th>Country</th>
+            <th>type</th>
+            <th>subtype</th>
+            <th>parallelizable</th>
+            <th>online</th>
+            <th>nonce MR</th>
+            <th>decryption Misuse</th>
+            <th>Inverse Free</th>
+            <th>status</th>
           </tr>
         </thead>
       </table>
       </div>
     </div>
   </div>
+<div id="about" class="row">
+<div class="col-md-12 well">
+<p>
+CAESAR (Competition for Authenticated Encryption: Security, Applicability, and Robustness) will identify a portfolio of authenticated ciphers that 
+<ol><li>offer advantages over AES-GCM</li>
+  <li>are suitable for widespread adoption</li>
+</ol>
+  This page lists all the proposals.
+</p>
+</div>
 
+</div>
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="dist/js/bootstrap.min.js"></script>
@@ -52,25 +143,47 @@
     <script type="text/javascript" src="js/dc.min.js"></script>
     <script type="text/javascript">
 
+//name;country;type;subtype;parallelizable;online;nonceMR;decryptionMisuse;inverseFree;status
 
-    d3.csv("sample.csv", function(error, data) {
+    var dsv = d3.dsv(";", "text/plain");
+    dsv("candidates.csv", function(error, data) {
 
       var ndx           = crossfilter(data);
       var dimension  = ndx.dimension(function(d) {return d.name;});
-      var group= dimension.group().reduceSum(function(d) {return d.qty;});
+      var all = ndx.groupAll();
 
-      var pie = drawPie("#test",ndx,dimension,group);
-      var table = drawTable("#table",ndx,dimension);
+      drawPie("#country",ndx,"country");
+      drawPie("#type",ndx,"type");
+      drawPie("#subtype",ndx,"subtype");
+      drawPie("#parallelizable",ndx,"parallelizable");
+      drawPie("#online",ndx,"online");
+      drawPie("#nonceMR",ndx,"nonceMR");
+      drawPie("#decryptionMisuse",ndx,"decryptionMisuse");
+      drawPie("#inverseFree",ndx,"inverseFree");
+      drawPie("#status",ndx,"status");
+
+      drawTable("#table",ndx,dimension);
   
+      drawCount();
+
       dc.renderAll();
 
+      function drawCount () {
+        dc.dataCount('.dc-data-count')
+        .dimension(ndx)
+        .group(all)
+        .html ({some: "%filter-count selected out of %total-count candidates <a class='btn btn-default btn-xs' href='javascript:dc.filterAll(); dc.renderAll();'  role='button'>Reset filters</a>", all: "%total-count candidates. Click on the graphs to filter them"})
 
-      function drawPie (dom, ndx, dimension,group) {
+      }
+
+      function drawPie (dom, ndx, attribute) {
+        var dimension  = ndx.dimension(function(d) {return d[attribute] || "?";});
+        var group= dimension.group().reduceSum(function(d) {return 1;});
         var chart = dc.pieChart(dom)
-          .width(768)
-          .height(480)
-          .slicesCap(4)
-          .innerRadius(100)
+          .width(400)
+          .height(200)
+          .slicesCap(10)
+          .innerRadius(20)
           .dimension(dimension)
           .group(group)
           .legend(dc.legend());
@@ -83,13 +196,20 @@
               .dimension(dimension)
               .size(1000)
               .group(function (d) { return "";})
+//name;country;type;subtype;parallelizable;online;nonceMR;decryptionMisuse;inverseFree;status
               .columns([
                   function (d) {
                       return d.name || "";
                   },
-                  function (d) {
-                      return d.qty || "";
-                  }
+                  function (d) {return d.country || "";},
+                  function (d) {return d.type || "";},
+                  function (d) {return d.subtype || "";},
+                  function (d) {return d.parallelizable || "";},
+                  function (d) {return d.online || "";},
+                  function (d) {return d.nonceMR || "";},
+                  function (d) {return d.decryptionMisuse|| "";},
+                  function (d) {return d.inverseFree|| "";},
+                  function (d) {return d.status|| "";}
               ])
               .sortBy(function (d) {
                   return d.name;
