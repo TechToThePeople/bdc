@@ -1,0 +1,58 @@
+name;country;type;subtype;parallelizable;online;nonceMR;decryptionMisuse;inverseFree;status
+ACORN;Singapore;Other;Other =FSR;;;;;;no
+++AE;Spain;BC;AES;Partly/Partly;;LCP;;No;Serious flaw
+AEGIS;Singapore;BC;AES;;;;;No;no
+AES-CMCC;US;BC;AES;No/Partly;;;;;Flaw
+AES-COBRA;Belgium;BC;AES;Partly/Partly;Fully/Fully;;;Yes;Serious flaw withdrawn
+AES-COPA;Belgium;BC;AES;Partly/Partly;Fully/Fully;LCP;;No;No
+AES-CPFB;Argentina;BC;AES;Fully/No;Fully/Fully;;;Yes;No
+AES-JAMBU;Singapore;BC;AES;No/No;;LCP;;Yes;No
+AES-OTR;Japan;BC;AES;Fully/Fully;Fully/Fully;;;Yes;No
+AEZ;US;BC;AES;Fully/Fully;No/No;Yes;Yes;Yes;No
+Artemia;Iran;P;Dedicated;No/No;Fully/Fully;;;Yes;No
+Ascon;Austria;P;Dedicated;No/No;Fully/Fully;;;Yes;No
+AVALANCHE;US;BC;AES;Fully/Fully;Fully/Fully;;;;Flaw
+Calico;US;;;;;;;;Serious flaw
+CBA;Iran;BC;AES;Fully/Fully;Fully/Fully;;;;Serious flaw
+CBEAM;Norway;;;;;;;;Serious flaw withdrawn
+CLOC;Japan;BC;AES and Other;No/No;Fully/Fully;;;;
+Deoxys;Singapore;;;;;LCP;;;
+ELmD;India;BC;{AES,AES[5]};Partly/Partly;Fully/Fully;LCP;;No;
+Enchilada;Canada;BC;AES,Rijndael-256;Fully/Fully;Fully/Fully;None;;Yes;
+FASER;US;;;;;;;;Serious flaw withdrawn
+HKC;Singapore;;;;;;;;Serious flaw withdrawn
+HS1-SIV;US;Other/{Universal Hash,ARX[Chacha]};;Fully/Fully;No/No;MAX;;Yes;
+ICEPOLE;Poland;P;Dedicated;Fully/Fully;Fully/Fully;;;Yes;Flaw
+iFeed[AES];China;BC;AES;Fully/No;Fully/Fully;LCP;;Yes;
+Joltik;Singapore;BC;Other;Fully/Fully, Partly/Partly;Fully/Fully, Fully/Fully;LCPNone;;No, No;
+Julius;Israel;BC;AES;Fully/Fully;No/No;MAX;;Yes, No;
+Ketje;Belgium;P;Dedicated;No/No;Fully/Fully;None;;Yes;
+Keyak;Belgium;P;Dedicated;Fully/Fully, Partly/Partly, No/No;Fully/Fully;;;Yes;
+KIASU;Singapore;BC;Other;Fully/Fully, Partly/Partly;Fully/Fully, Fully/Fully;LCPNone;;No, No;
+LAC;China;BC;Other;No/No;Fully/Fully;None;;No;Flaw
+Marble;Singapore;BC;AES[4];Partly/Partly;Fully/Fully;LCP;Yes;No;
+McMambo;US;Other;LRX;No/No;Fully/Fully;;;No;Serious flaw withdrawn
+Minalpher;Japan;;;;;;;;
+MORUS;Singapore;Other;LRX;No/No;Fully/Fully;;;N/A;
+NORX;Germany;P;Dedicated;Fully/Fully;Fully/Fully;;;Yes;Positive
+OCB;US;BC;AES;Fully/Fully;Fully/Fully;None;;No;
+OMD;Switzerland;Compression f-n;SHA-2;No/No;Fully/Fully;None;;N/A;
+PAEQ;Luxembourg;;;;;;;;
+PAES;China;BC;AES[4/8];;;;;;Serious flaw withdrawn
+PANDA;China;;;;;;;;Serious flaw withdrawn
+?-Cipher;Norway;P;Sponge;Fully/Fully;Fully/Fully;None;;Yes;Serious flaw
+POET;Germany;BC;AES;;;LCP;Yes;;Flaw
+POLAWIS;Poland;Other;;;;;;;
+PRIMATEs;Belgium;P;Other;;;LCP;Yes;;Yes
+Pr›st;Germany;P;Other;Partly/Partly, Fully/Fully, No/No;Fully/Fully;;;Yes, No, Yes;
+Raviyoyla;?;Other;Other = FSR;;;;;;
+Sablier;China;Other;Other = FSR;;;;;;Flaw
+SCREAM;Belgium;BC;Other;Fully/Fully;Fully/Fully;None;;No;Flaw
+SHELL;Singapore;BC;AES,AES[4];Partly/Partly;Fully/Fully;LCP;;No;
+SILC;Japan;BC;AES/Present/LED;No/No;Fully/Fully;;;Yes;
+Silver;?;BC;Other;;;;;;
+STRIBOB;Norway;P;Sponge;No/No;Fully/Fully;;;Yes;
+Tiaoxin;Singapore;BC;AES;No/No;Fully/Fully;None;;Yes;
+TriviA-ck;India;Other;Other = FSR;No/No;No/No;;;N/A;Flaw
+Wheesht;UK;Other;Other=ARX;;;None;;N/A;Flaw
+YAES;Belgium;BC;AES, AES[4];Fully/Fully;Fully/Fully;None;;Yes;
