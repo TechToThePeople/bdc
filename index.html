@@ -156,17 +156,30 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
       drawCountry("#country",ndx);
       drawPie("#type",ndx,"type");
       drawPie("#subtype",ndx,"subtype")
+        .radius(70)
+        .innerRadius(10)
         .colors(d3.scale.category20b());
       drawPie("#parallelizable",ndx,"parallelizable");
       drawPie("#online",ndx,"online")
+        .innerRadius(0)
         .colors(d3.scale.category20b());
       drawPie("#nonceMR",ndx,"nonceMR")
+        .innerRadius(0)
         .colors(d3.scale.category20b());
       drawPie("#decryptionMisuse",ndx,"decryptionMisuse")
+        .innerRadius(0)
         .colors(d3.scale.category20b());
       drawPie("#inverseFree",ndx,"inverseFree")
+        .innerRadius(0)
         .colors(d3.scale.category20b());
-      drawPie("#status",ndx,"status");
+      drawPie("#status",ndx,"status")
+        .radius(100)
+        .legend(dc.legend().x(100*2))
+        .innerRadius(10)
+        .on("postRender", function( chart ){
+          d3.select("#status > svg > g").attr("transform", "translate(100,100)");  
+        })
+
       drawTable("#table",ndx,dimension);
   
       drawCount();
