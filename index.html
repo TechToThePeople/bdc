@@ -158,20 +158,20 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
       drawPie("#subtype",ndx,"subtype")
         .radius(70)
         .innerRadius(10)
-        .colors(d3.scale.category20b());
+        .colors(d3.scale.category10());
       drawPie("#parallelizable",ndx,"parallelizable");
       drawPie("#online",ndx,"online")
         .innerRadius(0)
-        .colors(d3.scale.category20b());
+        .colors(d3.scale.category10());
       drawPie("#nonceMR",ndx,"nonceMR")
         .innerRadius(0)
-        .colors(d3.scale.category20b());
+        .colors(d3.scale.category10());
       drawPie("#decryptionMisuse",ndx,"decryptionMisuse")
         .innerRadius(0)
-        .colors(d3.scale.category20b());
+        .colors(d3.scale.category10());
       drawPie("#inverseFree",ndx,"inverseFree")
         .innerRadius(0)
-        .colors(d3.scale.category20b());
+        .colors(d3.scale.category10());
       drawPie("#status",ndx,"status")
         .radius(100)
         .legend(dc.legend().x(100*2))
@@ -198,6 +198,7 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
         var dimension  = ndx.dimension(function(d) {return d[attribute] || "?";});
         var group= dimension.group().reduceSum(function(d) {return 1;});
         var chart = dc.pieChart(dom)
+          .colors(d3.scale.category10())
           .width(324)
           .height(200)
           .slicesCap(10)
