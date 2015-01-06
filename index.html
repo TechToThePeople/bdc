@@ -152,7 +152,8 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
       var dimension  = ndx.dimension(function(d) {return d.name;});
       var all = ndx.groupAll();
 
-      drawPie("#country",ndx,"country");
+      //drawPie("#country",ndx,"country");
+      drawCountry("#country",ndx);
       drawPie("#type",ndx,"type");
       drawPie("#subtype",ndx,"subtype")
         .colors(d3.scale.category20b());
@@ -184,7 +185,7 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
         var dimension  = ndx.dimension(function(d) {return d[attribute] || "?";});
         var group= dimension.group().reduceSum(function(d) {return 1;});
         var chart = dc.pieChart(dom)
-          .width(400)
+          .width(324)
           .height(200)
           .slicesCap(10)
           .innerRadius(20)
@@ -194,7 +195,35 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
    
           return chart;
       }
-    
+   
+      function drawCountry (dom,ndx) {
+        var dimension  = ndx.dimension(function(d) {return d.country || "?";});
+        var group= dimension.group()
+          .reduceSum(function(d) {return 1;});
+        group.order(function(d){
+            return d.value;   
+          });
+        var chart = dc.barChart(dom)
+          .width(324)
+          .height(200)
+          .outerPadding(0)
+          .gap(1)
+          .margins({top: 10, right: 15, bottom: 55, left: 30})
+          .dimension(dimension)
+          .group(group) 
+          .x(d3.scale.ordinal())
+          .xUnits(dc.units.ordinal)
+          .brushOn(false)
+          .elasticY(true)
+          .ordering(function(d) { return d.value; }) //no working
+          .yAxisLabel("#candidates")
+          .on("postRender", function( chart ){
+                adjustBarChartLabels(chart);
+          })
+
+          return chart;
+      }
+
       function drawTable (dom, ndx, dimension) {
         var chart= dc.dataTable(dom)
               .dimension(dimension)
@@ -225,6 +254,12 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
 
     });
 
+
+  function adjustBarChartLabels(chart) {
+      chart.svg().selectAll('.axis.x text')
+        .style("text-anchor", "end" )
+        .attr("transform", function(d) { return "rotate(-45, -4, 9) "; });
+    }
 
 
 
