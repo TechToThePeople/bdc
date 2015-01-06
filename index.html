@@ -152,26 +152,30 @@ CAESAR (Competition for Authenticated Encryption: Security, Applicability, and R
       var dimension  = ndx.dimension(function(d) {return d.name;});
       var all = ndx.groupAll();
 
+      var colors = d3.scale.category20b();
+      colors.range(d3.shuffle(colors.range()));
+
       //drawPie("#country",ndx,"country");
       drawCountry("#country",ndx);
       drawPie("#type",ndx,"type");
       drawPie("#subtype",ndx,"subtype")
         .radius(70)
         .innerRadius(10)
-        .colors(d3.scale.category10());
+        .colors(colors)
       drawPie("#parallelizable",ndx,"parallelizable");
+      colors.range(d3.shuffle(colors.range()));
       drawPie("#online",ndx,"online")
         .innerRadius(0)
-        .colors(d3.scale.category10());
+        .colors((function (){d3.shuffle(colors.range());return colors})());
       drawPie("#nonceMR",ndx,"nonceMR")
         .innerRadius(0)
-        .colors(d3.scale.category10());
+        .colors((function (){d3.shuffle(colors.range());return colors})());
       drawPie("#decryptionMisuse",ndx,"decryptionMisuse")
         .innerRadius(0)
-        .colors(d3.scale.category10());
+        .colors((function (){d3.shuffle(colors.range());return colors})());
       drawPie("#inverseFree",ndx,"inverseFree")
         .innerRadius(0)
-        .colors(d3.scale.category10());
+        .colors((function (){d3.shuffle(colors.range());return colors})());
       drawPie("#status",ndx,"status")
         .radius(100)
         .legend(dc.legend().x(100*2))
