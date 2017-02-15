@@ -53,7 +53,7 @@
     <script type="text/javascript">
 
 
-    d3.csv("sample.csv", function(error, data) {
+    d3.csv("data/sample.csv", function(error, data) {
 
       var ndx           = crossfilter(data);
       var dimension  = ndx.dimension(function(d) {return d.name;});

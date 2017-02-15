@@ -6,6 +6,7 @@ var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 
 var DEST = 'build/';
+//node_modules/bootstrap/dist/css/bootstrap
 
 gulp.task('default', function() {
   return gulp.src('foo.js')
