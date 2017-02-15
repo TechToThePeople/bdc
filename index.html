@@ -6,16 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bootstrap 101 Template</title>
 
-    <!-- Bootstrap -->
-    <link href="dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="dist/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="dist/css/dc.css" rel="stylesheet">
+    <link href="dist/css/bootstrap.css" rel="stylesheet">
+    <link href="dist/css/bootstrap-theme.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
   </head>
   <body>
   <div class="container theme-showcase" role="main">
@@ -44,43 +38,45 @@
     </div>
   </div>
 
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="dist/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/d3.js"></script>
-    <script type="text/javascript" src="js/crossfilter.js"></script>
-    <script type="text/javascript" src="js/dc.min.js"></script>
+    <script src="dist/js/jquery.js"></script>
+    <script src="dist/js/bootstrap.js"></script>
+    <script type="text/javascript" src="dist/js/d3.js"></script>
+    <script type="text/javascript" src="dist/js/crossfilter.js"></script>
+    <script type="text/javascript" src="dist/js/dc.js"></script>
     <script type="text/javascript">
+"use strict";
 
-
+    var graphs = [];
     d3.csv("data/sample.csv", function(error, data) {
 
-      var ndx           = crossfilter(data);
-      var dimension  = ndx.dimension(function(d) {return d.name;});
-      var group= dimension.group().reduceSum(function(d) {return d.qty;});
+      var ndx = crossfilter(data);
 
-      var pie = drawPie("#test",ndx,dimension,group);
-      var table = drawTable("#table",ndx,dimension);
+     graphs.pie = drawPie("#test");
+     graphs.table = drawTable("#table");
   
-      dc.renderAll();
+      jQuery (function($) {
+        dc.renderAll();
+      });
 
-
-      function drawPie (dom, ndx, dimension,group) {
+      function drawPie (dom) {
+        var dim  = ndx.dimension(function(d) {return d.name;});
+        var group = dim.group().reduceSum(function(d) {return d.qty;});
         var chart = dc.pieChart(dom)
           .width(768)
           .height(480)
           .slicesCap(4)
           .innerRadius(100)
-          .dimension(dimension)
+          .dimension(dim)
           .group(group)
           .legend(dc.legend());
    
           return chart;
       }
     
-      function drawTable (dom, ndx, dimension) {
+      function drawTable (dom) {
+        var dim  = ndx.dimension(function(d) {return null;});
         var chart= dc.dataTable(dom)
-              .dimension(dimension)
+              .dimension(dim)
               .size(1000)
               .group(function (d) { return "";})
               .columns([
