@@ -1,0 +1,33 @@
+{
+  "name": "bdc",
+  "version": "1.0.0",
+  "description": "dc.js and bootstrap minimal",
+  "main": "index.html",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "d3": "^4.5.0",
+    "dc": "^2.1.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TechToThePeople/bdc.git"
+  },
+  "keywords": [
+    "data-visualization"
+  ],
+  "author": "xavier dutoit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TechToThePeople/bdc/issues"
+  },
+  "homepage": "https://github.com/TechToThePeople/bdc#readme"
+}
