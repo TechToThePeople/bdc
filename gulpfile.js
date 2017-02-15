@@ -7,7 +7,14 @@ var uglify = require('gulp-uglify');
 var cleanCSS = require('gulp-clean-css');
 
 var DEST = './dist/';
-var jsfiles = ['node_modules/jquery/dist/jquery.js','node_modules/boostrap/dist/js/boostrap.js','node_modules/d3/d3.js','node_modules/crossfilter/crossfilter.js','node_modules/dc/dc.js'];
+var jsfiles = [
+'node_modules/dc/dc.js',
+'node_modules/d3/d3.js',
+'node_modules/crossfilter/crossfilter.js',
+'node_modules/boostrap/dist/js/boostrap.js',
+'node_modules/jquery/dist/jquery.js',
+
+];
 var cssfiles = ['node_modules/bootstrap/dist/css/bootstrap.css','node_modules/bootstrap/dist/css/bootstrap-theme.css','node_modules/dc/dc.css'];
 //node_modules/bootstrap/dist/css/bootstrap
 //node_modules/jquery/dist/jquery.js
