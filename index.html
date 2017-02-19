@@ -4,34 +4,54 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap 101 Template</title>
+    <title>ECI signatures</title>
 
-    <!--link href="dist/css/dc.css" rel="stylesheet">
-    <link href="dist/css/bootstrap.css" rel="stylesheet">
-    <link href="dist/css/bootstrap-theme.css" rel="stylesheet"-->
     <link href="dist/style.css" rel="stylesheet">
 
+<style>
+ #channel g.row text {fill: grey;};
+</style>
   </head>
   <body>
-  <div class="container theme-showcase" role="main">
+  <div class="container" role="main">
+<div class="page-header"></div>
+<div class="row">
+<div id="date" class="col-md-12"><div class="panel panel-default"><div class="panel-heading">Date
 
-    <div class="jumbotron">
-      <h1>dc example</h1>
-        <p>This is a template showcasing boostrap and dc.js. Use it as a starting point to create something more unique by building on or modifying it.</p>
-    </div>
+<div class="btn-group" id="btn-date"></div>
+
+</div>
+<div class="panel-body"> <div class="graph"></div></div></div>
+</div>
+</div>
+<div class="row">
+	<div class="col-md-3">
+		<div id="overview">
+			<ul class="list-group">
+				<li class="list-group-item"><span class="summary_total"></span> total</button></li>
+				<li class="list-group-item list-group-item-success"><span class="badge total_percent"></span><span class="total"></span> signatures</button></li>
+			</ul>
+</div>
+	</div>
+<div id="channel" class="col-md-3"><div class="panel panel-default">
+  <div class="panel-heading" title="click to select campaigns">
+<th><input id="input-filter" placeholder="Channel" title="search on channel"/>
+</div>
+<div class="panel-body"> <div class="graph"></div></div></div></div>
+<div id="country" class="col-md-6"><div class="panel panel-default">
+<div class="panel-heading">Country</div><div class="panel-body"> <div class="graph"></div></div></div></div>
+
+</div>
+
 
     <div class="row">
       <div class="col-md-12">
-        <div id="test"></div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-      <table id="table" class="table">
+      <table class="table table-striped" id="table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Qty</th>
+            <th>Channel</th>
+            <th>Country</th>
+            <th>Total</th>
           </tr>
         </thead>
       </table>
@@ -39,61 +59,240 @@
     </div>
   </div>
 
-    <!--script src="dist/js/jquery.js"></script>
-    <script src="dist/js/bootstrap.js"></script>
-    <script type="text/javascript" src="dist/js/d3.js"></script>
-    <script type="text/javascript" src="dist/js/crossfilter.js"></script>
-    <script type="text/javascript" src="dist/js/dc.js"></script-->
-    <script type="text/javascript" src="dist/all.js"></script>
+    <script src="dist/all.js"></script>
   
-    <script type="text/javascript">
+    <script>
 "use strict";
 
+  jQuery.urlParam = function(name){
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    if (results==null){
+       return null;
+    }
+    else{
+       return decodeURI(results[1]) || 0;
+    }
+};
     var graphs = [];
-    d3.csv("data/sample.csv", function(error, data) {
-
+    var data = null;
+    var summary= {};
+    d3.csv("data/openeci.csv", function(error, csv) {
+      
+      var dateFormat = d3.time.format.utc("%Y-%m-%d");
+      var formatNumber = function (d){ return d3.format(",")(d).replace(",","'")};
+ 
+      data=csv;
+      data.forEach(function(d) {
+        d.total = + d.total;
+        d.date = dateFormat.parse(d.date);
+      }); 
       var ndx = crossfilter(data);
 
-     graphs.pie = drawPie("#test");
-     graphs.table = drawTable("#table");
-  
+//      graphs.pie = drawPie("#test");
+      graphs.channel = drawChannel("#channel .graph");
+      graphs.country = drawCountry("#country .graph");
+      graphs.date = drawDate("#date .graph");
+      graphs.btn_date = drawDateButton("#date .btn-group",graphs.date);
+      graphs.table = drawTable("#table");
+      drawNumbers(graphs); 
+
+      summary.total = graphs.total.data();
+
       jQuery (function($) {
+        graphs.search = drawTextSearch('#input-filter',jQuery);
+        $(".summary_total").text(formatNumber(summary.total));
+        $("#input-filter").val($.urlParam("channel")).keyup();//if channel param, filter
+        $("#date button")[0].click(); //select today
         dc.renderAll();
       });
 
-      function drawPie (dom) {
-        var dim  = ndx.dimension(function(d) {return d.name;});
-        var group = dim.group().reduceSum(function(d) {return d.qty;});
+
+function drawNumbers (graphs){
+  var formatPercent =d3.format(".2%");
+
+  
+  var group = ndx.groupAll().reduce(
+    function (p, v) {
+	p.total += +v.total;
+	return p;
+    },
+    function (p, v) {
+	p.total -= +v.total;
+	return p;
+    },
+    function () { return {
+       total:0,
+      };
+    });
+  
+  graphs.total=dc.numberDisplay(".total") 
+	    .valueAccessor(function(d){ return d.total})
+    .formatNumber(formatNumber)
+    .group(group);
+}
+
+
+function drawDateButton(dom, graph) {
+var data = [
+    { key: "today", label: "Today" },
+    { key: "yesterday", label: "Yesterday" },
+    { key: "week", label: "This week" },
+    { key: "month", label: "This month" },
+    { key: "Infinity", label: "All" }
+];
+  d3.select(dom)
+    .selectAll("button")
+    .data(data)
+    .enter()
+    .append ("button")
+    .text(function (d) {return d.label})
+    .classed("btn",true)
+    .classed("btn-default",true)
+    .on("click", function () {
+       var btn=d3.select(this);
+       d3.selectAll(dom +" .active").classed("active", false);
+       btn.classed("active",true);
+	    var s = new Date(), e = new Date();
+	    switch (btn.data()[0].key) {
+	      case "today":
+		s = d3.time.day.utc(e);
+		break;
+	      case "yesterday":
+		e = d3.time.day.utc(s);
+		s = d3.time.day.offset(e, -1);
+		break;
+	      case "week":
+		s = d3.time.monday.utc(e);
+		break;
+	      case "month":
+		s = d3.time.month.utc(e);
+		break;
+	      default:
+		s = d3.time.day.offset(e, - + btn.data()[0].key);
+	    }
+
+	    graph.filterAll(); //reset filter
+	    graph.filter(dc.filters.RangedFilter(s,e));
+	    graph.redrawGroup();
+    });
+
+
+}
+
+function drawDate (dom) {
+  var dim = ndx.dimension(function(d){return d.date;});//already grouped by day
+  var group = dim.group().reduceSum(function(d){return d.total;});
+  var graph=dc.lineChart(dom)
+   .margins({top: 0, right: 20, bottom: 20, left:30})
+    .height(150)
+    .width(650)
+    .dimension(dim)
+    .renderArea(true)
+    .group(group)
+//    .brushOn(true)
+    .x(d3.time.scale.utc().domain([dim.bottom(1)[0].date,dim.top(1)[0].date]))
+    .round(d3.time.day.utc.round)
+    .elasticY(true)
+    .xUnits(d3.time.days.utc);
+
+   graph.yAxis().ticks(5).tickFormat(d3.format(".2s"));
+   graph.xAxis().ticks(7);
+
+  return graph;
+}
+
+      function drawCountry (dom) {
+        var dim  = ndx.dimension(function(d) {return d.country;});
+        var group = dim.group().reduceSum(function(d) {return d.total;});
         var chart = dc.pieChart(dom)
-          .width(768)
-          .height(480)
-          .slicesCap(4)
-          .innerRadius(100)
+          .width(200)
+          .height(200)
+          .innerRadius(10)
           .dimension(dim)
-          .group(group)
-          .legend(dc.legend());
+          .group(group);
    
           return chart;
       }
     
+function drawTextSearch (dom,$,val) {
+
+  var dim = ndx.dimension(function(d) { return d.channel});
+
+  var throttleTimer;
+
+  $(dom).keyup (function () {
+
+    var s = jQuery(this ).val().toLowerCase();
+    $(".resetall").attr("disabled",false);
+    throttle();
+
+    function throttle() {
+      window.clearTimeout(throttleTimer);
+      throttleTimer = window.setTimeout(function() {
+        dim.filterAll();
+        dim.filterFunction(function (d) { return d.indexOf (s) !== -1;} );
+	dc.redrawAll();
+      }, 250);
+    }
+  });
+
+  return dim;
+
+}
+      function drawChannel (dom) {
+	  var dim = ndx.dimension(
+         function(d){
+         return d.channel;
+       });
+	  var group = dim.group()
+	//  .reduce(reduceAdd,reduceRemove,reduceInitial);
+	.reduceSum(function(d){return d.total;});
+	  var graph  = dc.rowChart(dom)
+	    .width(200)
+	    .height(275)
+	    .gap(0)
+	    .rowsCap(18)
+	    .ordering(function(d) { return -d.value })
+	//    .ordering(function(d) { return -d.value.count })
+	//    .valueAccessor( function(d) { return d.value.count })
+	//    .label (function (d) {return d.key;})
+	//    .title (function (d) {return d.key + ":" + d.value.count + "\nsignatures:" + d.value.sign + "\nnew:"+d.value.sign_new;})
+	    .dimension(dim)
+	    .elasticX(true)
+	.labelOffsetY(10)
+	.fixedBarHeight(14)
+	.labelOffsetX(2)
+        .colorCalculator(function(d){return 'lightblue';})
+	.group(group);
+
+    graph.xAxis().ticks(4);
+    graph.margins().left = 5;
+    graph.margins().top = 0;
+    graph.margins().bottom = 0;
+	  return graph;
+	}
+
       function drawTable (dom) {
         var dim  = ndx.dimension(function(d) {return null;});
         var chart= dc.dataTable(dom)
               .dimension(dim)
               .size(1000)
-              .group(function (d) { return "";})
+              .group(function (d) { return "<b>"+dateFormat(d.date)+"</b>";})
               .columns([
                   function (d) {
-                      return d.name || "";
+                      return d.channel;
                   },
                   function (d) {
-                      return d.qty || "";
+                      return d.country;
+                  },
+                  function (d) {
+                      return d.total;
                   }
               ])
               .sortBy(function (d) {
-                  return d.name;
+                  return d.total;
               })
-              .order(d3.ascending);
+              .order(d3.descending);
         return chart;
 
       }
