@@ -10,6 +10,7 @@
 
 <style>
  #channel g.row text {fill: grey;};
+.countries {stroke:grey;stroke-width:1;}
 </style>
   </head>
   <body>
@@ -46,7 +47,8 @@
 
     <div class="row">
       <div class="col-md-12">
-      <table class="table table-striped" id="table">
+<div id="map"></div>
+      <table class="table table-striped hidden" id="table">
         <thead>
           <tr>
             <th>Channel</th>
@@ -60,9 +62,51 @@
   </div>
 
     <script src="dist/all.js"></script>
-  
+ 
     <script>
 "use strict";
+var country = [{"country":"at","threshold":14250}
+,{"country":"be","threshold":16500}
+,{"country":"bg","threshold":13500}
+,{"country":"cy","threshold":4500}
+,{"country":"cz","threshold":16500}
+,{"country":"de","threshold":74250}
+,{"country":"dk","threshold":9750}
+,{"country":"ee","threshold":4500}
+,{"country":"el","threshold":16500}
+,{"country":"es","threshold":40500}
+,{"country":"fi","threshold":9750}
+,{"country":"fr","threshold":55500}
+,{"country":"hr","threshold":9000}
+,{"country":"hu","threshold":16500}
+,{"country":"ie","threshold":9000}
+,{"country":"it","threshold":54750}
+,{"country":"lt","threshold":9000}
+,{"country":"lu","threshold":4500}
+,{"country":"lv","threshold":6750}
+,{"country":"mt","threshold":4500}
+,{"country":"nl","threshold":19500}
+,{"country":"pl","threshold":38250}
+,{"country":"pt","threshold":16500}
+,{"country":"ro","threshold":24750}
+,{"country":"se","threshold":15000}
+,{"country":"si","threshold":6000}
+,{"country":"sk","threshold":9750}
+,{"country":"uk","threshold":54750}];
+
+  function setUrl(){
+   var country=graphs.country.filters();
+   var channel=$("#input-filter").val();
+   var url="?";
+   if (country && country.length > 0) url +="country="+country+"&";
+   if (channel) url +="channel="+channel+"&";
+   window.history.pushState(null, country + " " + channel, url);
+
+  };
+
+  function hasFilter() {
+    return $.urlParam("country") || $.urlParam("channel");
+  };
 
   jQuery.urlParam = function(name){
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -74,14 +118,32 @@
     }
 };
     var graphs = [];
-    var data = null;
     var summary= {};
-    d3.csv("data/openeci.csv", function(error, csv) {
+  var europe=null;
+  var data=null;
+
+  var q=d3.queue()
+    .defer (function(callback) {
+      d3.json("data/europe50b.json", function(error, json) {
+        europe=json;
+        callback();
+      });
+    })
+    .defer (function(callback) {
+      d3.csv("data/openeci.csv", function(error, csv) {
+        data=csv;
+        callback();
+      });
+    })
+    .await(function (){
+      draw();
+    });
+
+    function draw () {
       
       var dateFormat = d3.time.format.utc("%Y-%m-%d");
       var formatNumber = function (d){ return d3.format(",")(d).replace(",","'")};
  
-      data=csv;
       data.forEach(function(d) {
         d.total = + d.total;
         d.date = dateFormat.parse(d.date);
@@ -93,16 +155,25 @@
       graphs.country = drawCountry("#country .graph");
       graphs.date = drawDate("#date .graph");
       graphs.btn_date = drawDateButton("#date .btn-group",graphs.date);
-      graphs.table = drawTable("#table");
+      graphs.map = drawMap ("#map");
+//      graphs.table = drawTable("#table");
       drawNumbers(graphs); 
+      graphs.total.on("postRedraw", function(){setUrl()});
 
       summary.total = graphs.total.data();
+
 
       jQuery (function($) {
         graphs.search = drawTextSearch('#input-filter',jQuery);
         $(".summary_total").text(formatNumber(summary.total));
         $("#input-filter").val($.urlParam("channel")).keyup();//if channel param, filter
-        $("#date button")[0].click(); //select today
+        if ($.urlParam("country")){
+          $.urlParam("country").split(',').forEach(function(d){
+            graphs.country.filter(d);//if channel param, filter
+          });
+        }
+        if (!hasFilter())
+          $("#date button")[0].click(); //select today
         dc.renderAll();
       });
 
@@ -129,8 +200,64 @@ function drawNumbers (graphs){
 	    .valueAccessor(function(d){ return d.total})
     .formatNumber(formatNumber)
     .group(group);
+  graphs.total_percent=dc.numberDisplay(".total_percent") 
+	    .valueAccessor(function(d){ return d.total/summary.total})
+    .formatNumber(formatPercent)
+    .group(group);
 }
 
+function drawMap (dom) {
+  var width=800;
+  var dim = ndx.dimension(function(d) {return d.country.toUpperCase();});
+  var group = dim.group().reduceSum(function(d) {return d.total;})
+  
+      var _colors = d3.scale.linear().range(["red","orange","green","#4D4D4D"])
+.domain([0,0.9,1,1.1,10000]);;
+//      var _colorRange = ["green","#08551e","#ff6f00","#be1700","#4D4D4D","pink"];
+//      var _colors = d3.scale.ordinal().range(_colorRange).domain([0,0.9,1,1.1,10000]);
+
+
+var projection = d3.geo.equirectangular()
+    .center([18,52]) //theorically, 50°7′2.23″N 9°14′51.97″E but this works
+    .scale(width*0.8);
+  var geojson=topojson.feature(europe,europe.objects.countries);
+   
+  var map = dc.geoChoroplethChart(dom)
+	.height(width*0.8)
+	.width(width)
+	.dimension(dim)
+	.projection(projection)
+  .colorAccessor(function(v,i){
+    return v;
+    //var d=this.group().all()[i];
+    console.log(i+":"+v);
+    var c=country.find(function(c) {return c.country.toUpperCase()==d.key});
+    if (!c) return 0;
+    return v/c.threshold;
+  })
+	.group(group)
+  .colors(_colors)
+//	.colorCalculator(_colorCalculator)
+	.overlayGeoJson(geojson.features,"countries",function(d){
+	   return d.id;
+	})
+	.title(function (d) {return "" + d.key + ': ' + d.value;                                                        });
+		
+		
+	map.on("renderlet.a",function (chart){
+	  chart.selectAll(".countries").on("mouseover", function (d) {
+	    //console.log(d3.select(this));
+	    $("#explanation").html ("<h3>"+d.properties.name+"</h3>");
+	  });
+	
+	  chart.selectAll(".countries").on("click", function (d) {
+								    //$('.bar.'+'1').addClass('selectedbar');
+										//barchart.filterAll();
+										//barchart.redraw();
+	  })
+       }); 
+
+};
 
 function drawDateButton(dom, graph) {
 var data = [
@@ -189,7 +316,8 @@ function drawDate (dom) {
     .dimension(dim)
     .renderArea(true)
     .group(group)
-//    .brushOn(true)
+    .brushOn(false)
+    .title (function(d) {return dateFormat(d.key)+": "+d.value+" signatures"})
     .x(d3.time.scale.utc().domain([dim.bottom(1)[0].date,dim.top(1)[0].date]))
     .round(d3.time.day.utc.round)
     .elasticY(true)
@@ -297,7 +425,7 @@ function drawTextSearch (dom,$,val) {
 
       }
 
-    });
+    };
 
 
 
