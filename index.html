@@ -11,6 +11,25 @@
 <style>
  #channel g.row text {fill: grey;};
 .countries {stroke:grey;stroke-width:1;}
+
+.panel .panel-heading .nav-tabs {
+            margin:-10px -15px -12px -15px;
+            border-bottom-width:0;
+}
+
+.panel .panel-heading .nav-tabs li a {
+                    padding:15px;
+                    margin-bottom:1px;
+                    border:solid 0 transparent;
+}
+.panel .panel-heading .nav-tabs li a:hover {
+                    border-color: transparent;
+                    }
+
+
+.panel .panel-heading .nav-tabs li.active a,.panel .panel-heading .nav-tabs li.active a:hover {
+                        border:solid 0 transparent;                         
+                    }
 </style>
   </head>
   <body>
@@ -40,7 +59,23 @@
 </div>
 <div class="panel-body"> <div class="graph"></div></div></div></div>
 <div id="country" class="col-md-6"><div class="panel panel-default">
-<div class="panel-heading">Country</div><div class="panel-body"> <div class="graph"></div></div></div></div>
+<div class="panel-heading">
+
+ <ul class="nav nav-tabs" role="tablist" >
+<li class="disabled"><a href=""><b>Country</b></a></li>
+    <li role="presentation" class="active"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Map</a></li>
+    <li role="presentation"><a href="#pie" aria-controls="pie" role="tab" data-toggle="tab">Pie</a></li>
+  </ul>
+
+</div><div class="panel-body">
+
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="graph tab-pane active fade in" id="map"></div>
+    <div role="tabpanel" class="tab-pane pie fade in" id="pie"></div>
+  </div>
+</div></div></div>
 
 </div>
 
@@ -65,37 +100,38 @@
  
     <script>
 "use strict";
-var country = [{"country":"at","threshold":14250}
-,{"country":"be","threshold":16500}
-,{"country":"bg","threshold":13500}
+var country = [{"country":"at","threshold":13500}
+,{"country":"be","threshold":15750}
+,{"country":"bg","threshold":12750}
 ,{"country":"cy","threshold":4500}
-,{"country":"cz","threshold":16500}
-,{"country":"de","threshold":74250}
+,{"country":"cz","threshold":15750}
+,{"country":"de","threshold":72000}
 ,{"country":"dk","threshold":9750}
 ,{"country":"ee","threshold":4500}
-,{"country":"el","threshold":16500}
+,{"country":"el","threshold":15750}
 ,{"country":"es","threshold":40500}
 ,{"country":"fi","threshold":9750}
 ,{"country":"fr","threshold":55500}
-,{"country":"hr","threshold":9000}
-,{"country":"hu","threshold":16500}
-,{"country":"ie","threshold":9000}
+,{"country":"hr","threshold":8250}
+,{"country":"hu","threshold":15750}
+,{"country":"ie","threshold":8250}
 ,{"country":"it","threshold":54750}
-,{"country":"lt","threshold":9000}
+,{"country":"lt","threshold":8250}
 ,{"country":"lu","threshold":4500}
-,{"country":"lv","threshold":6750}
+,{"country":"lv","threshold":6000}
 ,{"country":"mt","threshold":4500}
 ,{"country":"nl","threshold":19500}
 ,{"country":"pl","threshold":38250}
-,{"country":"pt","threshold":16500}
-,{"country":"ro","threshold":24750}
+,{"country":"pt","threshold":16750}
+,{"country":"ro","threshold":24000}
 ,{"country":"se","threshold":15000}
 ,{"country":"si","threshold":6000}
 ,{"country":"sk","threshold":9750}
 ,{"country":"uk","threshold":54750}];
 
   function setUrl(){
-   var country=graphs.country.filters();
+   //var country=graphs.country.filters();
+   var country=null; // need to take it from the map
    var channel=$("#input-filter").val();
    var url="?";
    if (country && country.length > 0) url +="country="+country+"&";
@@ -139,10 +175,13 @@ var country = [{"country":"at","threshold":14250}
       draw();
     });
 
+
+
     function draw () {
       
       var dateFormat = d3.time.format.utc("%Y-%m-%d");
       var formatNumber = function (d){ return d3.format(",")(d).replace(",","'")};
+      var formatPercent =d3.format(".2%");
  
       data.forEach(function(d) {
         d.total = + d.total;
@@ -152,10 +191,10 @@ var country = [{"country":"at","threshold":14250}
 
 //      graphs.pie = drawPie("#test");
       graphs.channel = drawChannel("#channel .graph");
-      graphs.country = drawCountry("#country .graph");
+      graphs.map = drawMap ("#country .graph");
+      graphs.country = drawCountry("#country .pie");
       graphs.date = drawDate("#date .graph");
       graphs.btn_date = drawDateButton("#date .btn-group",graphs.date);
-      graphs.map = drawMap ("#map");
 //      graphs.table = drawTable("#table");
       drawNumbers(graphs); 
       graphs.total.on("postRedraw", function(){setUrl()});
@@ -179,7 +218,6 @@ var country = [{"country":"at","threshold":14250}
 
 
 function drawNumbers (graphs){
-  var formatPercent =d3.format(".2%");
 
   
   var group = ndx.groupAll().reduce(
@@ -207,33 +245,61 @@ function drawNumbers (graphs){
 }
 
 function drawMap (dom) {
-  var width=800;
+  var width=450;
   var dim = ndx.dimension(function(d) {return d.country.toUpperCase();});
-  var group = dim.group().reduceSum(function(d) {return d.total;})
+  //var group = dim.group().reduceSum(function(d) {return d.total;})
+  var group = dim.group().reduce(
+    function (p, v) {
+      p.total += +v.total;
+      if (p.iso == "") {
+        p.iso = v.country;
+        p.threshold =country[country.findIndex(function(c) {return v.country==c.country})].threshold;
+      }
+      return p;
+    },
+    function (p, v) {
+      p.total -= +v.total;
+      return p;
+    },
+    function () { return {
+       total:0,threshold:0,iso:""
+      };
+    });
   
-      var _colors = d3.scale.linear().range(["red","orange","green","#4D4D4D"])
-.domain([0,0.9,1,1.1,10000]);;
-//      var _colorRange = ["green","#08551e","#ff6f00","#be1700","#4D4D4D","pink"];
-//      var _colors = d3.scale.ordinal().range(_colorRange).domain([0,0.9,1,1.1,10000]);
+    var _colorsI = d3.scale.linear().range(["red","orange","lightgreen","green"])
+     .domain([0,0.5,1,1.1])
+     .clamp(true);
 
+   var _colors = function (value) {
+     if (!value)
+       return "lightgrey";
+     return _colorsI(value);
+   }
+     
 
-var projection = d3.geo.equirectangular()
-    .center([18,52]) //theorically, 50°7′2.23″N 9°14′51.97″E but this works
-    .scale(width*0.8);
+  var projection = d3.geo.equirectangular()
+    .center([37,47]) //theorically, 50°7′2.23″N 9°14′51.97″E but this works
+    .scale(width*1.3);
   var geojson=topojson.feature(europe,europe.objects.countries);
-   
+  //fix iso countries
+  geojson.features.forEach(function (d) {
+    if (d.id == "GB")
+      d.id = "UK";
+    if (d.id == "GR")
+      d.id = "EL";
+  });
+ 
   var map = dc.geoChoroplethChart(dom)
-	.height(width*0.8)
+	.height(width)
 	.width(width)
 	.dimension(dim)
 	.projection(projection)
-  .colorAccessor(function(v,i){
-    return v;
-    //var d=this.group().all()[i];
-    console.log(i+":"+v);
-    var c=country.find(function(c) {return c.country.toUpperCase()==d.key});
-    if (!c) return 0;
-    return v/c.threshold;
+  .colorAccessor(function(d){
+    if (!d || !d.iso) 
+      return d; // or do something
+    if (d.threshold > 0)
+      return d.total/d.threshold
+    return 0;
   })
 	.group(group)
   .colors(_colors)
@@ -241,7 +307,13 @@ var projection = d3.geo.equirectangular()
 	.overlayGeoJson(geojson.features,"countries",function(d){
 	   return d.id;
 	})
-	.title(function (d) {return "" + d.key + ': ' + d.value;                                                        });
+	.title(function (v) {
+    var d=v.value;
+    if (!d || !d.threshold) {
+      return v.key;// + " (not in the EU)";
+    }
+    return d.iso + " "+formatPercent(d.total / d.threshold)+ "\n- signatures: " + d.total + "\n- threshold: " + d.threshold;
+  });
 		
 		
 	map.on("renderlet.a",function (chart){
@@ -367,7 +439,19 @@ function drawTextSearch (dom,$,val) {
   return dim;
 
 }
-      function drawChannel (dom) {
+
+function filter_bins(source_group, f) {
+    f = f || function(d) {return d.value != 0;};
+
+    return {
+        all:function () {
+            return source_group.all().filter(function(d) {
+                return f(d.value);
+            });
+        }
+    };
+}
+ function drawChannel (dom) {
 	  var dim = ndx.dimension(
          function(d){
          return d.channel;
@@ -375,6 +459,7 @@ function drawTextSearch (dom,$,val) {
 	  var group = dim.group()
 	//  .reduce(reduceAdd,reduceRemove,reduceInitial);
 	.reduceSum(function(d){return d.total;});
+
 	  var graph  = dc.rowChart(dom)
 	    .width(200)
 	    .height(275)
@@ -391,7 +476,7 @@ function drawTextSearch (dom,$,val) {
 	.fixedBarHeight(14)
 	.labelOffsetX(2)
         .colorCalculator(function(d){return 'lightblue';})
-	.group(group);
+	.group(filter_bins(group));
 
     graph.xAxis().ticks(4);
     graph.margins().left = 5;

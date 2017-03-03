@@ -8,13 +8,13 @@ var cleanCSS = require('gulp-clean-css');
 
 var DEST = './dist/';
 var jsfiles = [
-'dist/js/polyfill.js',
+'js/polyfill.js',
 'node_modules/d3/d3.js',
 'node_modules/d3-queue/build/d3-queue.js',
 'node_modules/crossfilter/crossfilter.js',
 'node_modules/dc/dc.js',
 'node_modules/jquery/dist/jquery.js',
-'node_modules/boostrap/dist/js/boostrap.js',
+'node_modules/bootstrap/dist/js/bootstrap.js',
 'node_modules/topojson/dist/topojson.js',
 
 ];
