@@ -190,13 +190,13 @@ var country = [{"country":"at","threshold":13500}
       var ndx = crossfilter(data);
 
 //      graphs.pie = drawPie("#test");
+      drawNumbers(graphs); //needs to be the first one
       graphs.channel = drawChannel("#channel .graph");
       graphs.map = drawMap ("#country .graph");
       graphs.country = drawCountry("#country .pie");
       graphs.date = drawDate("#date .graph");
       graphs.btn_date = drawDateButton("#date .btn-group",graphs.date);
 //      graphs.table = drawTable("#table");
-      drawNumbers(graphs); 
       graphs.total.on("postRedraw", function(){setUrl()});
 
       summary.total = graphs.total.data();
@@ -235,11 +235,21 @@ function drawNumbers (graphs){
     });
   
   graphs.total=dc.numberDisplay(".total") 
-	    .valueAccessor(function(d){ return d.total})
+    .valueAccessor(function(d){ 
+       summary.filtered=d.total;
+       return d.total
+    })
     .formatNumber(formatNumber)
     .group(group);
+
   graphs.total_percent=dc.numberDisplay(".total_percent") 
-	    .valueAccessor(function(d){ return d.total/summary.total})
+    .valueAccessor(function(d){
+       if (d.total == summary.total){
+         $(".summary_total").parent().slideUp();
+         return summary.total/1000000;
+       }
+       $(".summary_total").parent().slideDown();
+       return d.total/summary.total})
     .formatNumber(formatPercent)
     .group(group);
 }
@@ -270,10 +280,17 @@ function drawMap (dom) {
      .domain([0,0.5,1,1.1])
      .clamp(true);
 
+    var _colorsR = d3.scale.linear().range(["#C6E2FF","#1D7CF2"])
+     .domain([0,1])
+     .clamp(true);
+
    var _colors = function (value) {
      if (!value)
        return "lightgrey";
-     return _colorsI(value);
+     if (summary.total != summary.filtered) {
+       return _colorsR(value.total/summary.filtered);
+     }
+     return _colorsI(value.total/value.threshold);
    }
      
 
@@ -295,10 +312,13 @@ function drawMap (dom) {
 	.dimension(dim)
 	.projection(projection)
   .colorAccessor(function(d){
+    return d;
     if (!d || !d.iso) 
       return d; // or do something
-    if (d.threshold > 0)
+    if (d.threshold > 0) {
+      
       return d.total/d.threshold
+    }
     return 0;
   })
 	.group(group)
