@@ -65,6 +65,7 @@
 <li class="disabled"><a href=""><b>Country</b></a></li>
     <li role="presentation" class="active"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Map</a></li>
     <li role="presentation"><a href="#pie" aria-controls="pie" role="tab" data-toggle="tab">Pie</a></li>
+    <li role="presentation"><a href="#list" aria-controls="list" role="tab" data-toggle="tab">Table</a></li>
   </ul>
 
 </div><div class="panel-body">
@@ -74,6 +75,7 @@
   <div class="tab-content">
     <div role="tabpanel" class="graph tab-pane active fade in" id="map"></div>
     <div role="tabpanel" class="tab-pane pie fade in" id="pie"></div>
+    <div role="tabpanel" class="tab-pane list fade in" id="list"></div>
   </div>
 </div></div></div>
 
@@ -432,7 +434,15 @@ function drawDate (dom) {
           .height(200)
           .innerRadius(10)
           .dimension(dim)
-          .group(group);
+          .group(group)
+          .on('renderlet', function(chart, filter){
+            var html="<table class='table table-striped'><thead><tr><th>Country</th><th>Signatures</th></tr></thead><tbody>";
+            chart.group().all().forEach(function(d) {
+               html += "<tr><td>"+d.key+"</td><td>"+d.value+"</td></tr>";
+            });
+            html += "</table>";
+            $("#list").html(html);
+          });
    
           return chart;
       }
