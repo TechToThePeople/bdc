@@ -124,7 +124,7 @@ var country = [{"country":"at","threshold":13500}
 ,{"country":"mt","threshold":4500}
 ,{"country":"nl","threshold":19500}
 ,{"country":"pl","threshold":38250}
-,{"country":"pt","threshold":16750}
+,{"country":"pt","threshold":15750}
 ,{"country":"ro","threshold":24000}
 ,{"country":"se","threshold":15000}
 ,{"country":"si","threshold":6000}
@@ -409,7 +409,7 @@ function drawDate (dom) {
   var graph=dc.lineChart(dom)
    .margins({top: 0, right: 20, bottom: 20, left:30})
     .height(150)
-    .width(650)
+    .width(0)
     .dimension(dim)
     .renderArea(true)
     .group(group)
@@ -506,8 +506,8 @@ function filter_bins(source_group, f) {
        var group = remove_empty_bins(allGroup);
 
 	  var graph  = dc.rowChart(dom)
-	    .width(200)
-	    .height(275)
+	    .width(0)
+	    .height(400)
 	    .gap(0)
 	    .rowsCap(18)
 	    .ordering(function(d) { return -d.value })
@@ -559,7 +559,12 @@ function filter_bins(source_group, f) {
 
 
 
-
+d3.select(window).on('resize.updatedc', function() {
+  dc.events.trigger(function() {
+    var graph = graphs.date;
+    graph.width(d3.select(graph.anchor()).node().parentNode.getBoundingClientRect().width-graph.margins().right).rescale().redraw();
+  },500);
+});
 
 
     </script>
