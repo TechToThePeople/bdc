@@ -102,7 +102,9 @@
  
     <script>
 "use strict";
-var country = [{"country":"at","threshold":13500}
+
+var country = [
+{"country":"at","threshold":13500}
 ,{"country":"be","threshold":15750}
 ,{"country":"bg","threshold":12750}
 ,{"country":"cy","threshold":4500}
@@ -131,6 +133,11 @@ var country = [{"country":"at","threshold":13500}
 ,{"country":"sk","threshold":9750}
 ,{"country":"uk","threshold":54750}];
 
+function getCountry(index) {
+  if (index === -1) return {country:"??",threshold:1};
+
+  return country[index];
+}
   function setUrl(){
    //var country=graphs.country.filters();
    var country=null; // need to take it from the map
@@ -187,25 +194,25 @@ var country = [{"country":"at","threshold":13500}
  
       data.forEach(function(d) {
         d.total = + d.total;
-        d.date = dateFormat.parse(d.date);
+        d.date = dateFormat.parse(d.date.substring(0,10));
+        d.country= d.country.toLowerCase();
       }); 
       var ndx = crossfilter(data);
-
 //      graphs.pie = drawPie("#test");
       drawNumbers(graphs); //needs to be the first one
-      graphs.channel = drawChannel("#channel .graph");
+//      graphs.channel = drawChannel("#channel .graph");
       graphs.map = drawMap ("#country .graph");
       graphs.country = drawCountry("#country .pie");
       graphs.date = drawDate("#date .graph");
       graphs.btn_date = drawDateButton("#date .btn-group",graphs.date);
-//      graphs.table = drawTable("#table");
+      graphs.table = drawTable("#table");
       graphs.total.on("postRedraw", function(){setUrl()});
 
       summary.total = graphs.total.data();
 
 
       jQuery (function($) {
-        graphs.search = drawTextSearch('#input-filter',jQuery);
+//        graphs.search = drawTextSearch('#input-filter',jQuery);
         $(".summary_total").text(formatNumber(summary.total));
         $("#input-filter").val($.urlParam("channel")).keyup();//if channel param, filter
         if ($.urlParam("country")){
@@ -214,7 +221,7 @@ var country = [{"country":"at","threshold":13500}
           });
         }
         if (!hasFilter())
-          $("#date button")[0].click(); //select today
+//XA          $("#date button")[0].click(); //select today
         dc.renderAll();
       });
 
@@ -265,7 +272,7 @@ function drawMap (dom) {
       p.total += +v.total;
       if (p.iso == "") {
         p.iso = v.country;
-        p.threshold =country[country.findIndex(function(c) {return v.country==c.country})].threshold;
+        p.threshold =getCountry(country.findIndex(function(c) {return v.country==c.country})).threshold;
       }
       return p;
     },
@@ -304,8 +311,10 @@ function drawMap (dom) {
   var geojson=topojson.feature(europe,europe.objects.countries);
   //fix iso countries
   geojson.features.forEach(function (d) {
-    if (d.id == "GB")
+    if (d.id == "")
       d.id = "UK";
+    if (d.id == "gr")
+      d.id = "EL";
     if (d.id == "GR")
       d.id = "EL";
   });
@@ -436,9 +445,10 @@ function drawDate (dom) {
           .dimension(dim)
           .group(group)
           .on('renderlet', function(chart, filter){
-            var html="<table class='table table-striped'><thead><tr><th>Country</th><th>Signatures</th></tr></thead><tbody>";
+            var html="<table class='table table-striped'><thead><tr><th>Country</th><th>Signatures</th><th>threshold</th></tr></thead><tbody>";
             chart.group().all().forEach(function(d) {
-               html += "<tr><td>"+d.key+"</td><td>"+d.value+"</td></tr>";
+               var t= getCountry(country.findIndex(function(c) {return d.key==c.country})).threshold;
+               html += "<tr><td>"+d.key+"</td><td>"+d.value+"</td><td>"+(d.value-t)+"</td></tr>";
             });
             html += "</table>";
             $("#list").html(html);
